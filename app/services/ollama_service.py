@@ -31,12 +31,12 @@ Rules:
 """
 
 TEST_SYSTEM_PROMPT = """You are a senior technical interviewer.
-Generate exactly 1 easy technical interview question with a detailed answer.
+Generate exactly 1 hard technical interview question with a detailed answer.
 
 STRICT OUTPUT FORMAT — return only valid JSON, no markdown, no extra text:
 {
   "questions": [
-    {"difficulty": "easy", "question": "...", "answer": "..."}
+    {"difficulty": "hard", "question": "...", "answer": "..."}
   ]
 }
 
