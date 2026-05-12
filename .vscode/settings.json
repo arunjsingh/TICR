@@ -1,5 +1,6 @@
 {
     "python.analysis.extraPaths": [
         "./app/db"
-    ]
+    ],
+    "makefile.configureOnOpen": false
 }
