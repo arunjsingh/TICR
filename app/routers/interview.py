@@ -5,7 +5,7 @@ import traceback
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from app.utils.file_parser import extract_text_from_file
 from app.db.database import get_db
 from app.models.interview import Question, QuestionSet
 from app.schemas.interview import (
@@ -36,21 +36,18 @@ async def generate_interview_questions(
     final_jd = ""
     final_resume = None
 
-    # Process Job Description
     if job_description_file:
-        content = await job_description_file.read()
-        final_jd = content.decode("utf-8")
-    elif job_description_text:
-        final_jd = job_description_text
+        final_jd = await extract_text_from_file(job_description_file)
+        logger.info("Final JD:", final_jd)
     else:
-        raise HTTPException(status_code=400, detail="Job description is required (as file or text).")
+        final_jd = job_description_text or ""
 
-    # Process Resume
+    # 2. Process Resume
     if resume_file:
-        content = await resume_file.read()
-        final_resume = content.decode("utf-8")
-    elif resume_text:
+        final_resume = await extract_text_from_file(resume_file)
+    else:
         final_resume = resume_text
+
 
     # Validation
     if len(final_jd) < 50:
