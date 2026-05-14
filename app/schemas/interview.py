@@ -1,5 +1,5 @@
 # app/schemas/interview.py
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing import Optional, List
 from enum import Enum
 
@@ -9,8 +9,35 @@ class DifficultyLevel(str, Enum):
     medium = "medium"
     hard   = "hard"
 
+class DifficultyDistribution(BaseModel):
+    easy: int = Field(default=0, ge=0, le=10, description="Number of easy questions")
+    medium: int = Field(default=0, ge=0, le=10, description="Number of medium questions")
+    hard: int = Field(default=0, ge=0, le=10, description="Number of hard questions")
 
+    @model_validator(mode="after")
+    def validate_total_count(self) -> "DifficultyDistribution":
+        total = self.easy + self.medium + self.hard
+        if total == 0:
+            raise ValueError("You must request at least 1 question.")
+        if total > 10:
+            raise ValueError(f"Total questions requested ({total}) exceeds the limit of 10.")
+        return self
+    
 # --- Request ---
+
+class DifficultyDistribution(BaseModel):
+    easy: int = Field(default=0, ge=0, le=10, description="Number of easy questions")
+    medium: int = Field(default=0, ge=0, le=10, description="Number of medium questions")
+    hard: int = Field(default=0, ge=0, le=10, description="Number of hard questions")
+
+    @model_validator(mode="after")
+    def validate_total_count(self) -> "DifficultyDistribution":
+        total = self.easy + self.medium + self.hard
+        if total == 0:
+            raise ValueError("You must request at least 1 question.")
+        if total > 10:
+            raise ValueError(f"Total questions requested ({total}) exceeds the limit of 10.")
+        return self
 
 class GenerateQuestionsRequest(BaseModel):
     job_description: str = Field(
@@ -36,6 +63,10 @@ class GenerateQuestionsRequest(BaseModel):
             }
         }
 
+class GenerateCustomQuestionsRequest(BaseModel):
+    job_description: str = Field(..., min_length=50)
+    resume: Optional[str] = None
+    distribution: DifficultyDistribution
 
 # --- Response ---
 
