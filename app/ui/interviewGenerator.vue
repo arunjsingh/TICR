@@ -281,23 +281,33 @@ const generatePack = async () => {
   questions.value = [];
   
   try {
-    const response = await axios.post('/api/questions/custom', {
-      job_description: jobDescription.value,
-      distribution: {
-        easy: distribution.value.easy,
-        medium: distribution.value.medium,
-        hard: distribution.value.hard
-      },
-      resume: resume.value || null
-    });
-    questions.value = response.data;
+    // 1. Convert the JSON payload into a FormData object
+    const formData = new FormData();
+    
+    // 2. Map the fields to match the exact names FastAPI expects
+    formData.append('job_description_text', jobDescription.value);
+    formData.append('resume_text', resume.value || '');
+    formData.append('easy_count', distribution.value.easy);
+    formData.append('medium_count', distribution.value.medium);
+    formData.append('hard_count', distribution.value.hard);
+
+    // 3. Send the FormData instance instead of the plain object
+    const response = await axios.post('/api/interview/generate-custom-questions', formData);
+    
+    // 4. Update your questions state with the backend array
+    // Note: Your FastAPI returns a schema with a .questions property
+    questions.value = response.data.questions; 
+    
   } catch (error) {
     console.error('Generation matrix exception:', error);
-    alert('Failed to safely extract questions from your local backend.');
+    // If FastAPI throws an input validation error (like text too short), show it
+    const errorMsg = error.response?.data?.detail || 'Failed to safely extract questions.';
+    alert(typeof errorMsg === 'string' ? errorMsg : 'Input validation failed.');
   } finally {
     isLoading.value = false;
   }
 };
+
 
 const exportAsText = () => {
   let content = `TICR AI — TECHNICAL EVALUATION PACK\nGenerated Questions\n===================================\n\n`;

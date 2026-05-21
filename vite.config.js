@@ -22,6 +22,8 @@ export default defineConfig({
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
         secure: false,
+        // ✂️ Strips "/api" from the path before passing it to FastAPI
+        rewrite: (path) => path.replace(/^\/api/, '')
       },
     },
   },
