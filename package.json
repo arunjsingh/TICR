@@ -1,0 +1,41 @@
+{
+  "name": "qwen-ollama-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "vite.config.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arunjsingh-lang/TICR.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/arunjsingh-lang/TICR/issues"
+  },
+  "homepage": "https://github.com/arunjsingh-lang/TICR#readme",
+  "dependencies": {
+    "autoprefixer": "^10.5.0",
+    "axios": "^1.16.1",
+    "mammoth": "^1.12.0",
+    "pdf-parse-fork": "^1.2.0",
+    "pdfjs-dist": "^5.7.284",
+    "postcss": "^8.5.15",
+    "tailwindcss": "^4.3.0",
+    "vue": "^3.5.34"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.0",
+    "@vitejs/plugin-vue": "^6.0.7",
+    "vite": "^8.0.13"
+  }
+}
