@@ -31,6 +31,8 @@ async def generate_custom_interview_questions(
     db: AsyncSession = Depends(get_db), 
 ): 
     # 1. Process Job Description Input (Prioritize file upload over raw text) 
+
+    logger.info ("AJS in generate custom interview ROUTER")
     final_jd = "" 
     if job_description_file and job_description_file.filename: 
         final_jd = await extract_text_from_file(job_description_file) 
@@ -39,16 +41,16 @@ async def generate_custom_interview_questions(
         final_jd = job_description_text or "" 
 
     # 2. Process Resume Input (Prioritize file upload over raw text) 
-    final_resume = None 
+    final_resume = ""
     if resume_file and resume_file.filename: 
         final_resume = await extract_text_from_file(resume_file) 
         logger.info(f"Extracted Resume text from file: {resume_file.filename}") 
     else: 
         final_resume = resume_text 
 
-    # 3. Validate Inputs and Question Counts 
-    if len(final_jd) < 50: 
-        raise HTTPException(status_code=400, detail="Job description text is too short (Minimum 50 characters required).") 
+    #3. Validate Inputs and Question Counts 
+    if (len(final_jd) < 50) and (len(final_resume) < 50):
+        raise HTTPException(status_code=400, detail="Job description text or Resume Text is too short (Minimum 50 characters required).") 
         
     total_questions = easy_count + medium_count + hard_count 
     if total_questions == 0: 

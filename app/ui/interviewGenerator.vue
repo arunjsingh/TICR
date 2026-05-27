@@ -55,7 +55,9 @@
         <!-- Job Description Input Area with Dropzone -->
         <div class="flex-1 flex flex-col min-h-[220px]">
           <label class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-2 flex justify-between items-center">
-            <span class="flex items-center gap-2"><span>📋</span> Job Description <span class="text-rose-500 text-xs">*Required</span></span>
+            <span class="flex items-center gap-2"><span>📋</span> Job Description 
+            <!-- <span class="text-rose-500 text-xs">*Required</span> -->
+          </span>
           </label>
           
           <!-- Dropzone Component Utility for JD -->
@@ -105,7 +107,7 @@
         <!-- Submit Pipeline Action Trigger -->
         <button 
           @click="generatePack"
-          :disabled="!jobDescription.trim() || isLoading"
+          :disabled="(!jobDescription.trim() && !resume.trim()) || isLoading"
           class="w-full py-3.5 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:from-slate-800 disabled:to-slate-800 disabled:text-slate-600 font-semibold rounded-lg shadow-lg active:scale-[0.99] transition duration-150 flex items-center justify-center space-x-2 text-sm disabled:cursor-not-allowed"
         >
           <span v-if="isLoading" class="animate-spin border-2 border-slate-400 border-t-transparent rounded-full h-4 w-4 mr-1"></span>
@@ -173,7 +175,6 @@
     </main>
   </div>
 </template>
-
 <script setup>
 import { ref, computed } from 'vue';
 import axios from 'axios';
@@ -276,7 +277,7 @@ const extractDocxTextNatively = async (arrayBuffer) => {
 // --- ENDPOINT TRANSMISSION & DOWNLOAD ENGINE ---
 
 const generatePack = async () => {
-  if (!jobDescription.value.trim()) return;
+  if (!jobDescription.value?.trim() && !resume.value?.trim()) return;
   isLoading.value = true;
   questions.value = [];
   
