@@ -5,12 +5,11 @@ cd TICR
 git checkout master 
 
 # To execute the code 
-# From the main folder within the code base/repo 
 
-# To install and run the backend portion of the TICR. 
+# Install and run the backend portion of the TICR. 
 make run 
 
-# To install and run the frontend (UI) portion of the TICR. 
+# Install and run the frontend (UI) portion of the TICR. 
 npm install 
 npm run dev
 ```
