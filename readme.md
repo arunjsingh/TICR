@@ -1,16 +1,16 @@
-# Download the repo using git  
-  git clone https://github.com/arunjsingh/TICR
+```bash
+# Download the repo using git 
+git clone https://github.com/arunjsingh/TICR 
+cd TICR 
+git checkout master 
 
-  cd TICR
-  git checkout master
+# To execute the code 
+# From the main folder within the code base/repo 
 
+# To install and run the backend portion of the TICR. 
+make run 
 
-# To execute the code
-# From the main folder within the code base/repo
-   # To install and run the backend portion of the TICR.
-   make run    #This will install and run the backend portion of the TICR.
-
-  # To install and run the frontend (UI) portion of the TICR.
-  npm install
-  npm run dev
-  
+# To install and run the frontend (UI) portion of the TICR. 
+npm install 
+npm run dev
+```
