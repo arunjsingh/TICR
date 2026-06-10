@@ -1,3 +1,5 @@
+# TICR
+
 ```bash
 # Download the repo using git 
 git clone https://github.com/arunjsingh/TICR 
