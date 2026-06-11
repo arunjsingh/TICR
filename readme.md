@@ -16,6 +16,9 @@ git checkout master
 make run 
 
 # Install and run the frontend (UI) portion of the TICR. 
+# Frontend will only run on CMD window, 
+# if running on POWERSHELL window, please run the following COMMAND -- but cannot promise you  # that it will work.
+# Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 npm install 
 npm run dev
 ```
