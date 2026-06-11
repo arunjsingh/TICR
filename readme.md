@@ -18,7 +18,8 @@ make run
 # Install and run the frontend (UI) portion of the TICR. 
 
 # Frontend will only run on CMD window, 
-# If you are using a PowerShell terminal, you may need to run this command first. Keep # #   in mind that depending on your machine's security settings, results may vary:
+# If you are using a PowerShell terminal, you may need to run this command first. Keep # # in mind that depending on your machine's security settings, results may vary:
+
 # Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 npm install 
