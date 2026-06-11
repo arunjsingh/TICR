@@ -22,7 +22,7 @@ venv/.venv_timestamp: requirements.txt
 	@echo "Creating virtual environment and installing packages..."
 	$(VENV_CREATE_CMD)
 	$(PIP_EXE) install --upgrade pip
-	$(PIP_EXE) install /-r requirements.txt
+	$(PIP_EXE) install -r requirements.txt
 	@$(TOUCH)
 
 run: venv/.venv_timestamp
