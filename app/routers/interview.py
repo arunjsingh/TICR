@@ -77,15 +77,25 @@ async def generate_custom_interview_questions(
             resume=final_resume, 
         ) 
         
-        # Safely extract the list if Ollama wrapped it in a "questions" key 
-        if isinstance(raw_questions, dict) and "questions" in raw_questions: 
-            raw_questions = raw_questions["questions"] 
-        elif isinstance(raw_questions, str): 
-            import json 
-            parsed = json.loads(raw_questions) 
-            raw_questions = parsed.get("questions", parsed if isinstance(parsed, list) else []) 
+            # Safely extract the list if Ollama wrapped it in a "questions" key
+        if isinstance(raw_questions, dict) and "questions" in raw_questions:
+            raw_questions = raw_questions["questions"]
+        elif isinstance(raw_questions, str):
+            import json
+            import re
             
-        logger.debug(f"▶ Got {len(raw_questions)} dynamic questions back from Ollama") 
+            # Clean up common AI generation anomalies (like trailing commas before close blocks)
+            cleaned_str = re.sub(r',\s*([\]}])', r'\1', raw_questions)
+            
+            try:
+                parsed = json.loads(cleaned_str)
+                raw_questions = parsed.get("questions", parsed if isinstance(parsed, list) else [])
+            except json.JSONDecodeError:
+                # If native json still fails, try a manual regex extraction or log the failure
+                logger.error("Failed parsing even after sanitization. Falling back.")
+                raise ValueError("Ollama returned invalid JSON syntax.")
+
+        logger.debug(f"▶ Got {len(raw_questions)} dynamic questions back from Ollama")
     except ValueError as e: 
         # Cleaned up: Put clean error mapping response message back in
         raise HTTPException(status_code=502, detail=f"AI generation mismatch: {str(e)}") 

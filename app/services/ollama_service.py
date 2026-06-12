@@ -9,7 +9,7 @@ from app.schemas.interview import DifficultyDistribution
 logger = logging.getLogger(__name__) 
 
 OLLAMA_BASE_URL = "http://localhost:11434" 
-MODEL = "qwen2.5vl:72b" 
+MODEL = "qwen2.5:3b" 
 
 # --- Shared Helper Functions --- 
 
