@@ -23,7 +23,7 @@ else
 endif
 
 # Define the Qwen model parameter size you want (e.g., 7b, 14b, coder:7b)
-MODEL_NAME = qwen2.5:14b
+MODEL_NAME = qwen2.5vl:72b
 
 .PHONY: all clean run setup-ollama pull-model
 
