@@ -14,51 +14,57 @@ from app.services.ollama_service import generate_custom_questions
 logger = logging.getLogger(__name__) 
 router = APIRouter(prefix="/interview", tags=["Interview"]) 
 
-@router.post("/generate-custom-questions", response_model=GenerateQuestionsResponse) 
-async def generate_custom_interview_questions( 
-    # Optional Text inputs (rendered as Form fields in Swagger) 
-    job_description_text: Optional[str] = Form(None, description="Raw job description text"), 
-    resume_text: Optional[str] = Form(None, description="Raw candidate resume text"), 
+@router.post("/generate-custom-questions", response_model=GenerateQuestionsResponse)
+async def generate_custom_interview_questions(
+    job_description_text: Optional[str] = Form(None, description="Raw job description text"),
+    resume_text: Optional[str] = Form(None, description="Raw candidate resume text"),
+    job_description_file: Optional[UploadFile] = File(None, description="Upload Job Description (PDF/Word)"),
+    resume_file: Optional[UploadFile] = File(None, description="Upload Candidate Resume (PDF/Word)"),
+    easy_count: Optional[int] = Form(0, ge=0, le=MAX_QUESTIONS_LIMIT, description="Number of easy questions"),
+    medium_count: Optional[int] = Form(0, ge=0, le=MAX_QUESTIONS_LIMIT, description="Number of medium questions"),
+    hard_count: Optional[int] = Form(0, ge=0, le=MAX_QUESTIONS_LIMIT, description="Number of hard questions"),
+    db: AsyncSession = Depends(get_db),
+):
+    logger.info("AJS in generate custom interview ROUTER")
     
-    # Optional File inputs (rendered as explicit File upload boxes in Swagger) 
-    job_description_file: Optional[UploadFile] = File(None, description="Upload Job Description (PDF/Word)"), 
-    resume_file: Optional[UploadFile] = File(None, description="Upload Candidate Resume (PDF/Word)"), 
-    
-    # 👇 2. CHANGE 'le=10' TO 'le=MAX_QUESTIONS_LIMIT' FOR EACH COUNTER
-    easy_count: int = Form(0, ge=0, le=MAX_QUESTIONS_LIMIT, description="Number of easy questions"), 
-    medium_count: int = Form(0, ge=0, le=MAX_QUESTIONS_LIMIT, description="Number of medium questions"), 
-    hard_count: int = Form(0, ge=0, le=MAX_QUESTIONS_LIMIT, description="Number of hard questions"), 
-    db: AsyncSession = Depends(get_db), 
-): 
-    # 1. Process Job Description Input (Prioritize file upload over raw text) 
+    # 1. Process Job Description Input
+    final_jd = ""
+    if job_description_file and job_description_file.filename:
+        final_jd = await extract_text_from_file(job_description_file)
+        logger.info(f"Extracted JD text from file: {job_description_file.filename}")
+    else:
+        final_jd = job_description_text or ""
 
-    logger.info ("AJS in generate custom interview ROUTER")
-    final_jd = "" 
-    if job_description_file and job_description_file.filename: 
-        final_jd = await extract_text_from_file(job_description_file) 
-        logger.info(f"Extracted JD text from file: {job_description_file.filename}") 
-    else: 
-        final_jd = job_description_text or "" 
-
-    # 2. Process Resume Input (Prioritize file upload over raw text) 
+    # 2. Process Resume Input
     final_resume = ""
-    if resume_file and resume_file.filename: 
-        final_resume = await extract_text_from_file(resume_file) 
-        logger.info(f"Extracted Resume text from file: {resume_file.filename}") 
-    else: 
-        final_resume = resume_text 
+    if resume_file and resume_file.filename:
+        final_resume = await extract_text_from_file(resume_file)
+        logger.info(f"Extracted Resume text from file: {resume_file.filename}")
+    else:
+        final_resume = resume_text or "" # Fixed NoneType bug
 
-    #3. Validate Inputs and Question Counts 
-    if (len(final_jd) < 50) and (len(final_resume) < 50):
-        raise HTTPException(status_code=400, detail="Job description text or Resume Text is too short (Minimum 50 characters required).") 
-        
-    total_questions = easy_count + medium_count + hard_count 
-    if total_questions == 0: 
-        raise HTTPException(status_code=400, detail="You must request at least 1 question.") 
-        
-    # 👇 3. UPDATE THE VALIDATION THRESHOLD CHECK AND ERROR STRING TO USE THE VARIABLE
-    if total_questions > MAX_QUESTIONS_LIMIT: 
-        raise HTTPException(status_code=400, detail=f"Total requested questions ({total_questions}) exceeds the maximum limit of {MAX_QUESTIONS_LIMIT}.") 
+    # 3. Validate Inputs and Question Counts
+    if len(final_jd) < 50 and len(final_resume) < 50:
+        raise HTTPException(
+            status_code=400, 
+            detail="You must provide either a Job Description or a Resume with at least 50 characters."
+        )
+
+    # Convert incoming None/empty form counts safely to 0
+    e_cnt = easy_count if easy_count is not None else 0
+    m_cnt = medium_count if medium_count is not None else 0
+    h_cnt = hard_count if hard_count is not None else 0
+
+    total_questions = e_cnt + m_cnt + h_cnt
+    if total_questions == 0:
+        raise HTTPException(status_code=400, detail="You must request at least 1 question.")
+
+    if total_questions > MAX_QUESTIONS_LIMIT:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Total requested questions ({total_questions}) exceeds the maximum limit of {MAX_QUESTIONS_LIMIT}."
+        )
+    distribution = DifficultyDistribution(easy=e_cnt, medium=m_cnt, hard=h_cnt)
 
     # 4. Package distribution metrics for the LLM prompt engine 
     distribution = DifficultyDistribution(easy=easy_count, medium=medium_count, hard=hard_count) 
