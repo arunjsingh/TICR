@@ -5,6 +5,7 @@
 * **Python Launcher:** Ensure you check the "Add python.exe to PATH" option when installing Python.  Currently we are using v3.14.4
 * **Locked Files Error:** If you get an error saying `Unable to copy venvlauncher.exe`, it means a hidden terminal is still running the app. Close your terminal/VS Code windows and try again.
 * Install node.js if not already installed. https://nodejs.org/en
+* Install llama3 model from https://www.llama.com/models/llama-3/
 
 
 ```bash
