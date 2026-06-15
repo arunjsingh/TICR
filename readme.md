@@ -1,8 +1,11 @@
 # TICR
 
 ### Windows Installation Notes
-* **Python Launcher:** Ensure you check the "Add python.exe to PATH" option when installing Python.
+* In Windows, please install the python using Python launcher.  Currently we are using 
+* **Python Launcher:** Ensure you check the "Add python.exe to PATH" option when installing Python.  Currently we are using v3.14.4
 * **Locked Files Error:** If you get an error saying `Unable to copy venvlauncher.exe`, it means a hidden terminal is still running the app. Close your terminal/VS Code windows and try again.
+* Install node.js if not already installed. https://nodejs.org/en
+
 
 ```bash
 # Download the repo using git 
@@ -23,6 +26,7 @@ make run
 
 # Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
+Change directory to repo head, in my case  ....../TICR.
 npm install 
 npm run dev
 ```
