@@ -29,5 +29,7 @@ make run
 
 Change directory to repo head, in my case  ....../TICR.
 npm install 
+  # if you get an error, sayng unable to get issuer certificate then type this command on the command window
+  # npm config set strict-ssl false
 npm run dev
 ```
