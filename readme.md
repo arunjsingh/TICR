@@ -1,7 +1,7 @@
 # TICR
 
 ### Windows Installation Notes
-* In Windows, please install the python using Python launcher.  Currently we are using 
+* In Windows, please install the python using Python Launcher.  Currently we are using v3.14.4
 * **Python Launcher:** Ensure you check the "Add python.exe to PATH" option when installing Python.  Currently we are using v3.14.4
 * **Locked Files Error:** If you get an error saying `Unable to copy venvlauncher.exe`, it means a hidden terminal is still running the app. Close your terminal/VS Code windows and try again.
 * Install node.js if not already installed. https://nodejs.org/en
