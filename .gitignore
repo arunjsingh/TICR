@@ -6,3 +6,4 @@ env/
 instance/
 .pytest_cache/
 node_modules/
+*.db
