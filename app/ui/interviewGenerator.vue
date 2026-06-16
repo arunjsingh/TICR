@@ -181,8 +181,7 @@ import axios from 'axios';
 import * as mammoth from 'mammoth';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Set up the background worker path for PDF processing
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cloudflare.com{pdfjsLib.version}/pdf.worker.min.mjs`;
+// FIX 1: Removed the broken cloudflare link that was sitting up here.
 
 // Target Text Form State Variables
 const jobDescription = ref('');
@@ -193,8 +192,8 @@ const questions = ref([]);
 // Drag Visual Micro-States
 const jdDrag = ref(false);
 const resumeDrag = ref(false);
-
 const distribution = ref({ easy: 2, medium: 2, hard: 2 });
+
 const totalExpected = computed(() => distribution.value.easy + distribution.value.medium + distribution.value.hard);
 
 const adjustDiff = (type, amt) => {
@@ -203,11 +202,9 @@ const adjustDiff = (type, amt) => {
 };
 
 // --- FILE EXTRACTION ROUTINES ---
-
 const handleFileDrop = (event, targetField) => {
   if (targetField === 'jd') jdDrag.value = false;
   if (targetField === 'resume') resumeDrag.value = false;
-  
   const files = event.dataTransfer.files;
   if (files && files.length > 0) processInputFile(files[0], targetField);
 };
@@ -219,40 +216,44 @@ const handleFileUpload = (event, targetField) => {
 
 const processInputFile = async (file, targetField) => {
   const extension = file.name.split('.').pop().toLowerCase();
-  
   try {
     if (extension === 'txt') {
       const reader = new FileReader();
       reader.onload = (e) => assignExtractedText(e.target.result, targetField);
       reader.readAsText(file);
-    } 
-    else if (extension === 'docx') {
+    } else if (extension === 'docx') {
       const arrayBuffer = await file.arrayBuffer();
-      // mammoth extracts raw clean text while discarding complex hidden layout XML
       const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
       assignExtractedText(result.value, targetField);
-    } 
-    else if (extension === 'pdf') {
+    }  else if (extension === 'pdf') {
       const arrayBuffer = await file.arrayBuffer();
+
+      // FIX FOR VITE: Import the local minified worker using Vite's '?url' suffix helper
+      const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.min.mjs?url');
+      pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker.default;
+
       const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+      
+      // Now the promise will resolve safely with no compilation or CORS errors
       const pdf = await loadingTask.promise;
       let fullText = '';
-      
+
       // Loop through every page to compile the full document text string
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
-        const pageText = textContent.items.map(item => item.str).join(' ');
+        const pageText = textContent.items
+          .map(item => item.str || '') 
+          .join(' ');
         fullText += pageText + '\n';
       }
-      
       assignExtractedText(fullText, targetField);
-    } 
-    else {
+    } else {
       alert('Unsupported format. Please upload a .txt, .pdf, or .docx file.');
     }
   } catch (err) {
-    console.error('File parsing error:', err);
+    // Look at your browser console (F12) to see exactly what this prints if it fails!
+    console.error('File parsing error details:', err);
     alert('Failed to parse text from the uploaded file safely.');
   }
 };
@@ -275,40 +276,28 @@ const extractDocxTextNatively = async (arrayBuffer) => {
 };
 
 // --- ENDPOINT TRANSMISSION & DOWNLOAD ENGINE ---
-
 const generatePack = async () => {
   if (!jobDescription.value?.trim() && !resume.value?.trim()) return;
   isLoading.value = true;
   questions.value = [];
-  
   try {
-    // 1. Convert the JSON payload into a FormData object
     const formData = new FormData();
-    
-    // 2. Map the fields to match the exact names FastAPI expects
     formData.append('job_description_text', jobDescription.value);
     formData.append('resume_text', resume.value || '');
     formData.append('easy_count', distribution.value.easy);
     formData.append('medium_count', distribution.value.medium);
     formData.append('hard_count', distribution.value.hard);
 
-    // 3. Send the FormData instance instead of the plain object
     const response = await axios.post('/api/interview/generate-custom-questions', formData);
-    
-    // 4. Update your questions state with the backend array
-    // Note: Your FastAPI returns a schema with a .questions property
-    questions.value = response.data.questions; 
-    
+    questions.value = response.data.questions;
   } catch (error) {
     console.error('Generation matrix exception:', error);
-    // If FastAPI throws an input validation error (like text too short), show it
     const errorMsg = error.response?.data?.detail || 'Failed to safely extract questions.';
     alert(typeof errorMsg === 'string' ? errorMsg : 'Input validation failed.');
   } finally {
     isLoading.value = false;
   }
 };
-
 
 const exportAsText = () => {
   let content = `TICR AI — TECHNICAL EVALUATION PACK\nGenerated Questions\n===================================\n\n`;
@@ -319,13 +308,7 @@ const exportAsText = () => {
 };
 
 const exportAsDocx = () => {
-  let htmlString = `
-    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://w3.org'>
-    <head><title>Technical Interview Questions</title><style>body { font-family: Arial, sans-serif; }</style></head>
-    <body>
-      <h2>TICR AI - Technical Interview Pack</h2>
-      <hr/>
-  `;
+  let htmlString = ` <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://w3.org'> <head><title>Technical Interview Questions</title><style>body { font-family: Arial, sans-serif; }</style></head> <body> <h2>TICR AI - Technical Interview Pack</h2> <hr/> `;
   questions.value.forEach((q, i) => {
     htmlString += `<h3>Q${i + 1} (${q.difficulty.toUpperCase()})</h3><p><b>Question:</b> ${q.question}</p><p><b>Ideal Answer:</b> <i>${q.answer}</i></p><br/>`;
   });
