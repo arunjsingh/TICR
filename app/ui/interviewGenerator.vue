@@ -181,7 +181,6 @@ import axios from 'axios';
 import * as mammoth from 'mammoth';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// FIX 1: Removed the broken cloudflare link that was sitting up here.
 
 // Target Text Form State Variables
 const jobDescription = ref('');
@@ -228,13 +227,11 @@ const processInputFile = async (file, targetField) => {
     }  else if (extension === 'pdf') {
       const arrayBuffer = await file.arrayBuffer();
 
-      // FIX FOR VITE: Import the local minified worker using Vite's '?url' suffix helper
       const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.min.mjs?url');
       pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker.default;
 
       const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
       
-      // Now the promise will resolve safely with no compilation or CORS errors
       const pdf = await loadingTask.promise;
       let fullText = '';
 
@@ -252,7 +249,6 @@ const processInputFile = async (file, targetField) => {
       alert('Unsupported format. Please upload a .txt, .pdf, or .docx file.');
     }
   } catch (err) {
-    // Look at your browser console (F12) to see exactly what this prints if it fails!
     console.error('File parsing error details:', err);
     alert('Failed to parse text from the uploaded file safely.');
   }
